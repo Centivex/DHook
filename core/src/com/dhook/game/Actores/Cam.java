@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
-import static com.dhook.game.General.Constant.ppm;
 
 public class Cam extends Actor {
     private OrthographicCamera orthographiCam;
@@ -20,13 +19,13 @@ public class Cam extends Actor {
         super.act(delta);
         //movimiento de la camara
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            orthographiCam.translate(-16* ppm,0);
+            orthographiCam.translate(-16,0);
         }else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            orthographiCam.translate(16* ppm,0);
+            orthographiCam.translate(16,0);
         }else if(Gdx.input.isKeyPressed(Input.Keys.UP)){
-            orthographiCam.translate(0,16* ppm);
+            orthographiCam.translate(0,16);
         }else if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-            orthographiCam.translate(0,-16* ppm);
+            orthographiCam.translate(0,-16);
         }
     }
 
