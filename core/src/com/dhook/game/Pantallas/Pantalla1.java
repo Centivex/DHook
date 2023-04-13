@@ -62,6 +62,7 @@ public class Pantalla1 extends BaseScreen {
         stage.addActor(player);
         stage.addActor(playerAttack);
 
+
         //stage.addActor(munecoPractica);
 
     }

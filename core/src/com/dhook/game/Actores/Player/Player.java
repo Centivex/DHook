@@ -4,10 +4,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.dhook.game.General.BodyCreator.BodyCreatorCircle;
 import com.dhook.game.General.BodyCreator.BodyType;
 import com.dhook.game.General.BodyCreator.BodyCreator;
 import com.dhook.game.General.BodyCreator.BodyCreatorBox;
 import com.dhook.game.General.Direction;
+
+import java.util.ArrayList;
 
 import static com.dhook.game.General.Constant.ppm;
 import static com.dhook.game.General.Constant.ppmR;
@@ -19,8 +22,12 @@ public class Player extends Actor {
     private Body playerbody;
     private Fixture playerFixture;
 
-    private float width, height;
+    private float radius=5;
     private Direction direction = Direction.DOWN;
+
+    private  boolean movement = false;
+    private  float posXPrevious =0, posYPrevious= 0;
+    private ArrayList<ActionPlayer> actionPlayer = new ArrayList<ActionPlayer>(); // Create an ArrayList object
 
     public Body getPlayerbody() {
         return playerbody;
@@ -38,31 +45,32 @@ public class Player extends Actor {
         return playerbody.getPosition().y *ppmR;
     }
 
-    @Override
-    public float getWidth() {
-        return width;
+    public float getRadius() {
+        return radius;
     }
 
-    @Override
-    public float getHeight() {
-        return height;
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public boolean getMovement() {
+        return movement;
     }
 
     public Player(World world) {
 
-        BodyCreatorBox playerCreated = new BodyCreatorBox(world, BodyType.DYNAMIC, 20, 20, 5, 5, "player");
+        BodyCreatorCircle playerCreated = new BodyCreatorCircle(world, BodyType.DYNAMIC, 20, 20, radius, "player");
         playerbody = playerCreated.getBody();
         playerFixture = playerCreated.getFixture();
-        width = playerCreated.getWidth();
-        height = playerCreated.getHeight();
-
-        //playerbody.setFixedRotation(true);
+        playerbody.setFixedRotation(true);
 
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
+
+
 
         //moviemiento
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
@@ -79,9 +87,18 @@ public class Player extends Actor {
         } else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             playerbody.setLinearVelocity(50 * ppm, 0);
             direction = Direction.RIGHT;
+        }else if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            playerbody.setAngularVelocity(50 * ppm);
         } else {
             playerbody.setLinearVelocity(0, 0);
         }
+
+
+
+
+        System.out.println("velocidad jugador:" + playerbody.getLinearVelocity());
+        System.out.println("DESPIERTO:" + playerbody.isAwake());
+
     }
 
 

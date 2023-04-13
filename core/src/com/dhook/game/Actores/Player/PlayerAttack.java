@@ -16,6 +16,8 @@ import com.dhook.game.General.BodyCreator.BodyCreator;
 import com.dhook.game.General.BodyCreator.BodyCreatorCircle;
 import com.dhook.game.General.BodyCreator.BodyType;
 
+import javax.print.attribute.standard.PagesPerMinute;
+
 import static com.dhook.game.General.Constant.ppm;
 
 public class PlayerAttack extends ActionPlayer {
@@ -23,11 +25,10 @@ public class PlayerAttack extends ActionPlayer {
     //cuerpo
     private World world;
     private Player player;
+    private float posXPlayer = 0 , posYPlayer= 0;
+
     private Body playerAttackBody;
     private Fixture playerAttackFixture;
-
-    private WeldJointDef weldJointDef;
-
     private float radius = 5;
 
 
@@ -35,91 +36,15 @@ public class PlayerAttack extends ActionPlayer {
         super(world, player);
         this.player=player;
 
-        BodyCreatorCircle playerAttackCreated = new BodyCreatorCircle(world, BodyType.DYNAMIC,player.getWidth()/2+player.getBodyPositionX()-radius/2,player.getHeight()*2+player.getBodyPositionY()+10,radius,"player",true);
+        BodyCreatorCircle playerAttackCreated = new BodyCreatorCircle(world, BodyType.DYNAMIC,50,50,radius,"player",true);
         playerAttackBody= playerAttackCreated.getBody();
         playerAttackFixture = playerAttackCreated.getFixture();
 
         //playerAttackBody.setFixedRotation(true);
 
-        RevoluteJointDef revoluteJointDef= new RevoluteJointDef();
-        revoluteJointDef.bodyA = playerAttackBody;
-        revoluteJointDef.bodyB = player.getPlayerbody();
-        revoluteJointDef.collideConnected = false;
-
-
-        /*RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
-        revoluteJointDef.initialize(player.getPlayerbody(),playerAttackBody , new Vector2(player.getPlayerbody().getPosition().x, player.getPlayerbody().getPosition().y));
-        revoluteJointDef.enableMotor = true;
-        revoluteJointDef.motorSpeed = 5;
-        world.createJoint(revoluteJointDef);*/
-
-        /*DistanceJointDef jointDef = new DistanceJointDef();
-        jointDef.bodyA = player.getPlayerbody();
-        jointDef.bodyB = playerAttackBody;
-        jointDef.localAnchorA.set(0, 10*ppm);
-        jointDef.localAnchorB.set(0, 10*ppm);
-        jointDef.length = 10*ppm;
-        jointDef.frequencyHz = 1f;
-        jointDef.dampingRatio = 0.1f;
-        world.createJoint(jointDef);*/
-
-        /*PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
-        prismaticJointDef.bodyA = player.getPlayerbody();
-        prismaticJointDef.bodyB = playerAttackBody;
-        prismaticJointDef.localAnchorA.set(0, 0);
-        prismaticJointDef.localAnchorB.set(0, 0);
-        prismaticJointDef.localAxisA.set(1, 1); // dirección de la unión
-        prismaticJointDef.enableLimit = true; // activar límites de movimiento
-        prismaticJointDef.lowerTranslation = 0f; // límite inferior de movimiento
-        prismaticJointDef.upperTranslation = 5f; // límite superior de movimiento
-        world.createJoint(prismaticJointDef);*/
-
-        /*PulleyJointDef pulleyJointDef = new PulleyJointDef();
-        // Define los cuerpos
-        pulleyJointDef.bodyA =  player.getPlayerbody();;
-        pulleyJointDef.bodyB = playerAttackBody;
-        // Define las anclas
-        pulleyJointDef.groundAnchorA.set(0, 0);
-        pulleyJointDef.groundAnchorB.set(10*ppm, 0);
-        pulleyJointDef.localAnchorA.set(0, 0);
-        pulleyJointDef.localAnchorB.set(0, 0);
-        // Define las longitudes y relaciones de los cables
-        pulleyJointDef.lengthA = 5*ppm;
-        pulleyJointDef.lengthB = 10*ppm;
-        pulleyJointDef.ratio = 2*ppm;
-        PulleyJoint joint = (PulleyJoint) world.createJoint(pulleyJointDef);*/
-
-
-        /*WheelJointDef wheelJointDef = new WheelJointDef();
-        wheelJointDef.initialize(player.getPlayerbody(), playerAttackBody, player.getPlayerbody().getWorldCenter(), new Vector2(0, 10*ppm));
-        wheelJointDef.frequencyHz = 2;
-        wheelJointDef.maxMotorTorque = 10;
-        wheelJointDef.motorSpeed = 0;
-        wheelJointDef.enableMotor = true;
-        world.createJoint(wheelJointDef);*/
-
-        /*weldJointDef = new WeldJointDef();
-        weldJointDef.bodyA =  player.getPlayerbody();
-        weldJointDef.bodyB = playerAttackBody;
-        weldJointDef.localAnchorA.set(10*ppm, 0);
-        weldJointDef.localAnchorB.set(-5*ppm, 0);
-        world.createJoint(weldJointDef);*/
 
 
 
-
-        /*PolygonShape sensorShape = new PolygonShape();
-        sensorShape.setAsBox(20*ppm, 20*ppm);
-
-        FixtureDef sensorFixtureDef = new FixtureDef();
-        sensorFixtureDef.shape = sensorShape;
-        sensorFixtureDef.isSensor = true;
-        player.getPlayerbody().createFixture(sensorFixtureDef);
-
-
-        player.getPlayerbody().getFixtureList().get(1).setSensor(true);
-        player.getPlayerbody().getFixtureList().get(1).setUserData("front sensor");
-*/
 
 
     }
@@ -137,10 +62,22 @@ public class PlayerAttack extends ActionPlayer {
     public void act(float delta) {
         super.act(delta);
 
+        if(player.getMovement()){
+            playerAttackBody.setLinearVelocity(0,0);
+        }else{
+            playerAttackBody.setLinearVelocity(player.getPlayerbody().getLinearVelocity());
+        }
+
+
+        System.out.println("distancia con el ataque:" + (player.getPlayerbody().getPosition().x - playerAttackBody.getPosition().x));
+
+        posXPlayer = player.getPlayerbody().getPosition().x;
+        posYPlayer = player.getPlayerbody().getPosition().y;
+
         //playerAttackBody.setTransform((player.getWidth()/2+player.getBodyPositionX()-radius/2)*ppm ,(player.getHeight()*2+player.getBodyPositionY())*ppm,0);
 
         //moviemiento
-        if (Gdx.input.isKeyPressed(Input.Keys.I)) {
+        /*if (Gdx.input.isKeyPressed(Input.Keys.I)) {
             //weldJointDef.localAnchorA.set(0, 10*ppm);
             playerAttackBody.setLinearVelocity(0, 50 * ppm);
             //playerbody.applyForceToCenter(0,5*ppm,true);
@@ -153,7 +90,7 @@ public class PlayerAttack extends ActionPlayer {
             playerAttackBody.setLinearVelocity(50 * ppm, 0);
         } else {
             playerAttackBody.setLinearVelocity(0, 0);
-        }
+        }*/
 
 
     }
