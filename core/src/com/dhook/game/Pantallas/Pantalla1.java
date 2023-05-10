@@ -4,14 +4,14 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.dhook.game.Actores.Cam;
-import com.dhook.game.Actores.Enemies.MunecoPractica;
-import com.dhook.game.Actores.Player.Player;
+import com.dhook.game.CEngine.CObject;
+import com.dhook.game.CEngine.CWorld;
+import com.dhook.game.CObjects.Enemies.MunecoPruebas;
+import com.dhook.game.CObjects.Player;
+import com.dhook.game.Scene2d.Cam;
 import com.dhook.game.General.BaseScreen;
 
 public class Pantalla1 extends BaseScreen {
@@ -19,40 +19,44 @@ public class Pantalla1 extends BaseScreen {
 
     //Camara y escenario
     private OrthographicCamera orthographiCam;
+    private SpriteBatch spriteBatch;
     private Viewport viewp;
     private Stage stage;
 
     //Actores
     private Cam cam;
-    private Player player;
 
-    private MunecoPractica munecoPractica;
+    private CWorld cWorld;
+    private CObject player, muneco;
+
+
 
     public Pantalla1(Game dHook) {
         super(dHook);
+        spriteBatch = new SpriteBatch();
 
         //Camara
         orthographiCam = new OrthographicCamera();
         viewp = new PixelScreenViewport(256, 256, orthographiCam);
 
         //---------------------------------------------------------------------------------------------------------
+        //Scene2d
         //Actores
         cam = new Cam(orthographiCam);
-        player = new Player();
-        munecoPractica= new MunecoPractica();
-
-        //---------------------------------------------------------------------------------------------------------
         //Escenario
-        stage=new Stage(viewp);
+        stage=new Stage(viewp, spriteBatch);
         stage.setDebugAll(true);
         Gdx.input.setInputProcessor(stage);
-
         stage.addActor(cam);
-        stage.addActor(player);
+        //---------------------------------------------------------------------------------------------------------
+
+        cWorld= new CWorld(spriteBatch);
+        player= new Player();
+        muneco = new MunecoPruebas();
+        cWorld.add(player);
+        cWorld.add(muneco);
 
 
-
-        //stage.addActor(munecoPractica);
 
     }
 
@@ -70,13 +74,17 @@ public class Pantalla1 extends BaseScreen {
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
+
+        cWorld.act();
+        cWorld.draw();
     }
 
     @Override
     public void dispose() {
         cam.remove();
-        player.remove();
         stage.dispose();
+
+
 
     }
 

@@ -1,4 +1,4 @@
-package com.dhook.game.Actores;
+package com.dhook.game.Scene2d;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
