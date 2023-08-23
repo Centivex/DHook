@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.dhook.game.CEngine.CObject;
 import com.dhook.game.CEngine.CWorld;
 import com.dhook.game.CObjects.Enemies.MunecoPruebas;
-import com.dhook.game.CObjects.Player;
+import com.dhook.game.CObjects.Player.Player;
 import com.dhook.game.Scene2d.Cam;
 import com.dhook.game.General.BaseScreen;
 
@@ -75,7 +75,7 @@ public class Pantalla1 extends BaseScreen {
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 
-        cWorld.act();
+        cWorld.act(Gdx.graphics.getDeltaTime());
         cWorld.draw();
     }
 

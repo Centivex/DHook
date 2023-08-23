@@ -23,7 +23,7 @@ public abstract class CObject {
         return nameId;
     }
 
-    public abstract void act();
+    public abstract void act(float deltaTime);
 
     public abstract void draw(SpriteBatch spriteBatch);
 

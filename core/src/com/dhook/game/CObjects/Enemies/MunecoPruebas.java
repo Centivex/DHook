@@ -40,7 +40,7 @@ public class MunecoPruebas extends CObject {
     }
 
     @Override
-    public void act() {
+    public void act( float deltaTime) {
 
     }
 
