@@ -5,11 +5,12 @@ import com.badlogic.gdx.math.Vector2
 import com.dhook.game.CEngine.CObjectDinamico
 import com.dhook.game.General.Utils
 
-/** Created by Darius on 17/09/2023. */
-open class InputModule() {
-    var previousRawMovingAngle = 0f
-    var rawMovingAngle = 0f
-    var smoothedMovingAngle = 0f
+/** Un módulo de input para un objeto dinámico: le seteas los inputs de movimiento (joystick o teclas pulsadas en cada dirección)
+ * y este módulo calcula el porcentaje. Los detalles de movimiento se especifican en una subclase (si es teclado, mando, etc) */
+abstract class InputModule(val objectoDinamico: CObjectDinamico) {
+    var rawMovingAngle = 0f // ángulo raw = ángulo real, sin procesamientos extra
+    var smoothedMovingAngle = 0f // ángulo smoothed = ángulo que se procesa con una animación de acercamiento al ángulo real,
+                                    // para que los cambios pequeños de dirección no sean instantáneos
     var movingPercent = 0f
 
     open fun update(delta: Float) {
@@ -17,30 +18,31 @@ open class InputModule() {
     }
 }
 
-enum class InputDirection {
-    UP, DOWN, LEFT, RIGHT;
+class InputModuleKeyboard(objectoDinamico: CObjectDinamico) : InputModule(objectoDinamico) {
+    // las 4 direcciones que se pueden pulsar en un teclado
+    enum class InputDirection {
+        UP, DOWN, LEFT, RIGHT;
 
-    val contrary: InputDirection
-        get() {
+        val opposite: InputDirection
+            get() {
+                return when (this) {
+                    DOWN -> UP
+                    LEFT -> RIGHT
+                    RIGHT -> LEFT
+                    UP -> DOWN
+                }
+            }
+
+        fun toDegrees(): Int {
             return when (this) {
-                DOWN -> UP
-                LEFT -> RIGHT
-                RIGHT -> LEFT
-                UP -> DOWN
+                UP -> 90
+                RIGHT -> 0
+                LEFT -> 180
+                DOWN -> 270
             }
         }
-
-    fun toDegrees(): Int {
-        return when (this) {
-            UP -> 90
-            RIGHT -> 0
-            LEFT -> 180
-            DOWN -> 270
-        }
     }
-}
 
-class InputModuleKeyboard(val objectoDinamico: CObjectDinamico) : InputModule() {
     var inputDown: Boolean = false
     var inputUp: Boolean = false
     var inputLeft: Boolean = false
@@ -69,7 +71,6 @@ class InputModuleKeyboard(val objectoDinamico: CObjectDinamico) : InputModule() 
         changedMovingDirection = false
         tmpVector.set(0f, 0f)
 
-        // just started walking
         if (anyMovementIsTrue()) keyboardMovingDirection = null
 
         if (anyMovementIsTrue() && (keyboardMovingDirection == InputDirection.UP && !inputUp
@@ -137,23 +138,17 @@ class InputModuleKeyboard(val objectoDinamico: CObjectDinamico) : InputModule() 
             rawMovingAngle = Math.toDegrees(Math.atan2(tmpVector.y.toDouble(), tmpVector.x.toDouble())).toFloat()
         }
 
-        // SMOOTH THE ANGLE
-//        if (Utils.getAngleDifferenceNotSigned(rawMovingAngle, previousRawMovingAngle) < 55f) {
-//
-//        }
-
+        // Aproximamos el ángulo "smoothed" para que se acerque al ángulo real
         if (movingPercent > 0f) {
             val diferencia = Utils.getAngleDifferenceNotSigned(smoothedMovingAngle, rawMovingAngle)
             if (diferencia > 60f) {
+                // la diferencia es muy grande: no animes el ángulo
                 smoothedMovingAngle = rawMovingAngle
             } else {
-                val velocidadDeAproximacion = Utils.map(diferencia, 45f, 75f, 0.5f, 0.99f)
+                val velocidadDeAproximacion = Utils.map(diferencia, 45f, 60f, 0.2f, 0.99f)
                 smoothedMovingAngle =
                     MathUtils.lerpAngleDeg(smoothedMovingAngle, rawMovingAngle, velocidadDeAproximacion)
             }
         }
-        //
-
-        previousRawMovingAngle = rawMovingAngle;
     }
 }

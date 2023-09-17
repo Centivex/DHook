@@ -11,6 +11,4 @@ class AnimationModule {
         DOWNRIGHT(315f),
         DOWNLEFT(225f)
     }
-
-
 }
