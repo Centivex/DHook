@@ -5,14 +5,24 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.MathUtils;
 import com.dhook.game.CEngine.CObject;
+import com.dhook.game.CEngine.CObjectDinamico;
 import com.dhook.game.CObjects.Player.Enum.UltimatePressAD;
 import com.dhook.game.CObjects.Player.Enum.UltimatePressWS;
-import com.dhook.game.General.Direction;
+import com.dhook.game.General.SpriteDirection;
+import com.dhook.game.General.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class Player extends CObject {
+public class Player extends CObjectDinamico {
+    @Override
+    public float getVelocidadMovimiento() {
+        return 3;
+    }
+
+    private InputModuleKeyboard moduloMovimiento = new InputModuleKeyboard(this);
 
     private Circle circleMov;
     private ShapeRenderer circuloMovRender;
@@ -21,13 +31,12 @@ public class Player extends CObject {
     private boolean pressW, pressS, pressA, pressD, movY, movX;
     private UltimatePressAD uPressAD;
 
-    private Direction directionPlayerX, directionPlayerY = Direction.UP;
-    private Direction directionPlayer = Direction.UP;
+    private SpriteDirection direccionPlayer = SpriteDirection.UP;
 
     private float dashDuration = 0.2f; // Duración del dash en segundos
     private float dashTimer = 0;
 
-    private boolean test =false;
+    private boolean test = false;
     private float durationTest = 1f;
     private float timerTest = 0;
 
@@ -81,27 +90,19 @@ public class Player extends CObject {
         for (CObject object : arrayCObject) {
 
             switch (object.getNameId()) {
-
                 case "Muneco":
                     if (overlap(this, object)) {
-
-
                         if (object.getCircleColision().x - this.circleMov.x > 0) {
                             System.out.println("DERECHA");
-
                         }
                         if (object.getCircleColision().x - this.circleMov.x < 0) {
                             System.out.println("IZQUIERDA");
-
                         }
-
                         if (object.getCircleColision().y - this.circleMov.y > 0) {
                             System.out.println("ARRIBA");
-
                         }
                         if (object.getCircleColision().y - this.circleMov.y < 0) {
                             System.out.println("ABAJO");
-
                         }
                     } else {
 
@@ -110,7 +111,6 @@ public class Player extends CObject {
                     break;
 
             }
-
         }
     }
 
@@ -121,120 +121,58 @@ public class Player extends CObject {
     }
 
     public void playerMove(float deltaTime) {
+        moduloMovimiento.resetInputBooleans();
 
-        //moviemiento
-        //mov horizontal-----------------------------
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            uPressWS = UltimatePressWS.W;
-            pressW = true;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.W) && uPressWS == UltimatePressWS.W) {
-            directionPlayerY = Direction.UP;
-            circleMov.y += velocityY * deltaTime;
-        } else if (!Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            pressW = false;
-            uPressWS = UltimatePressWS.S;
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+            moduloMovimiento.setInputUp(true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+            moduloMovimiento.setInputDown(true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            moduloMovimiento.setInputLeft(true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            moduloMovimiento.setInputRight(true);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-            pressS = true;
-            uPressWS = UltimatePressWS.S;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.S) && uPressWS == UltimatePressWS.S) {
-            directionPlayerY = Direction.DOWN;
-            circleMov.y -= velocityY * deltaTime;
-        } else if (!Gdx.input.isKeyPressed(Input.Keys.S)) {
-            pressS = false;
-            uPressWS = UltimatePressWS.W;
-        }
+        moduloMovimiento.update(deltaTime);
 
-        if (pressW || pressS) {
-            movY = true;
-        } else {
-            movY = false;
-        }
+        float angle = moduloMovimiento.getSmoothedMovingAngle();
+        circleMov.x += moduloMovimiento.getMovingPercent() * getVelocidadMovimiento() * Math.cos(MathUtils.degreesToRadians * angle);
+        circleMov.y += moduloMovimiento.getMovingPercent() * getVelocidadMovimiento() * Math.sin(MathUtils.degreesToRadians * angle);
 
+        SpriteDirection min = Arrays.stream(SpriteDirection.values())
+                .min((o1, o2) -> {
+                    float diferencia1 = Utils.getAngleDifferenceNotSigned(moduloMovimiento.getSmoothedMovingAngle(), o1.getAngleDegrees());
+                    float diferencia2 = Utils.getAngleDifferenceNotSigned(moduloMovimiento.getSmoothedMovingAngle(), o2.getAngleDegrees());
+                    return Float.compare(diferencia1, diferencia2);
+                }).get();
+        System.out.println(
+                Arrays.stream(SpriteDirection.values())
+                        .map(o -> {
+                            float diferencia1 = Utils.getAngleDifferenceNotSigned(moduloMovimiento.getSmoothedMovingAngle(), o.getAngleDegrees());
+                            return diferencia1;
+                        }
+        ));
 
-        //mov vertical-------------------------------------------------
+        System.out.println(min);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-            uPressAD = UltimatePressAD.A;
-            pressA = true;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.A) && uPressAD == UltimatePressAD.A) {
-            directionPlayerX = Direction.LEFT;
-            circleMov.x -= velocityX * deltaTime;
-        } else if (!Gdx.input.isKeyPressed(Input.Keys.A)) {
-            pressA = false;
-            uPressAD = UltimatePressAD.D;
-        }
-
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-            uPressAD = UltimatePressAD.D;
-            pressD = true;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.D) && uPressAD == UltimatePressAD.D) {
-            directionPlayerX = Direction.RIGHT;
-            circleMov.x += velocityX * deltaTime;
-        } else if (!Gdx.input.isKeyPressed(Input.Keys.D)) {
-            pressD = false;
-            uPressAD = UltimatePressAD.A;
-        }
-
-        if (pressA || pressD) {
-            movX = true;
-        } else {
-            movX = false;
-        }
-
-        //mov lateral----------------------------------------------------
-
-        if (movY == true && movX == false) {
-            directionPlayer = directionPlayerY;
-        } else if (movY == false && movX == true) {
-            directionPlayer = directionPlayerX;
-        } else if (movY == true && movX == true) {
-            if (directionPlayerY == Direction.UP && directionPlayerX == Direction.RIGHT) {
-                directionPlayer = Direction.UPRIGHT;
-            } else if (directionPlayerY == Direction.UP && directionPlayerX == Direction.LEFT) {
-                directionPlayer = Direction.UPLEFT;
-            } else if (directionPlayerY == Direction.DOWN && directionPlayerX == Direction.RIGHT) {
-                directionPlayer = Direction.DOWNRIGHT;
-            } else if (directionPlayerY == Direction.DOWN && directionPlayerX == Direction.LEFT) {
-                directionPlayer = Direction.DOWNLEFT;
-            }
-        }
-
-
-        //------------------------------------------------------------
-       if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
-            if (timerTest <= 0) {
-                timerTest = durationTest;
-            }
-            test = true;
-        }else {
-
-            if (timerTest > 0) {
-                timerTest -= Gdx.graphics.getDeltaTime();
-            }else if (timerTest <= 0) {
-                test = false;
-            }
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-        System.out.println(directionPlayer);
-
-
+//        //------------------------------------------------------------
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+//            if (timerTest <= 0) {
+//                timerTest = durationTest;
+//            }
+//            test = true;
+//        } else {
+//
+//            if (timerTest > 0) {
+//                timerTest -= Gdx.graphics.getDeltaTime();
+//            } else if (timerTest <= 0) {
+//                test = false;
+//            }
+//        }
+//
+//        System.out.println(direccionPlayer);
     }
-
-
 }
